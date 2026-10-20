@@ -27,7 +27,7 @@ With TinyTeX or other minimal installs: it needs to be added it with `tlmgr inst
 
 
 ```sh
-pip install git+https://github.com/USER/tex-pace
+pip install git+https://github.com/mesrobichaud/tex-pace
 ```
 
 The LaTeX Workshop recipe calls it by its full path, so if it's installed in an environment that env doesn't need to be active in VSCodium.
