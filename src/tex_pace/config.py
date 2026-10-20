@@ -15,42 +15,28 @@ else:
 CONFIG_NAME = "tex-pace.toml"
 
 TEMPLATE = """\
-# tex-pace configuration. Paths are relative to this file.
+# tex-pace configuration. Paths are relative to this file. See the tex-pace README for details and examples.
 
-# Files whose words are counted (globs allowed). Files they \\input, \\include, \\subfile or \\import are
-# followed too, unless excluded below.
-include = ["{main}"]
-
-# Files left out of the count, and not followed. A pattern without a "/" matches a file name in any folder.
-exclude = [
-    # "frontmatter/*",
-    # "appendix*.tex",
-]
-
-# Set to false to count only the files matched by `include`.
-follow_inputs = true
-
-# Compiled PDF used for the page count (the LaTeX Workshop recipe passes --pdf, which overrides this).
-pdf = "{pdf}"
+{include:<31}# files to count (globs allowed); the files they \\input or \\include are counted too
+exclude = []                   # files not counted, e.g. ["frontmatter/*", "appendix*.tex"]
+follow_inputs = true           # false: count only the files matched by `include`
+{pdf:<31}# PDF for the page count, when --pdf isn't given
 
 [words]
-headers = false        # also count words in \\section{{...}} etc.
-captions = false       # also count words in figure and table captions
-texcount = "texcount"  # path to texcount, if it is not on PATH
-texcount_args = []     # extra arguments for texcount, e.g. ["-incbib"]
+headers = false                # also count words in \\section{{...}} etc.
+captions = false               # also count words in figure and table captions
+texcount = "texcount"          # path to texcount, if it isn't on PATH
+texcount_args = []             # extra texcount arguments, e.g. ["-incbib"]
 
 [pages]
-# Pages are counted from the PDF page labelled `start_label` (so roman-numbered front matter is skipped) up to
-# the page before the last bookmark named in `end_bookmarks` (needs hyperref). Use start_label = "" to start
-# at the first page, and end_bookmarks = [] to count to the end of the PDF.
-start_label = "1"
-end_bookmarks = ["References", "Bibliography"]
+start_label = ""               # start at the page numbered this, e.g. "1" ("" = first page of the PDF)
+end_bookmarks = []             # stop before the bookmark with this title, e.g. ["References"] ([] = end of PDF)
 
 [output]
 csv = "progress/progress.csv"
 plot = "progress/progress.png"
 
-[goal]
+[goal]                         # optional
 # words = 80000
 # pages = 200
 # date = {goal_date}
@@ -143,8 +129,8 @@ def load(start: Path) -> Config:
         captions=get("words", "captions", bool, False),
         texcount=get("words", "texcount", str, "texcount"),
         texcount_args=get("words", "texcount_args", list, []),
-        start_label=get("pages", "start_label", str, "1"),
-        end_bookmarks=get("pages", "end_bookmarks", list, ["References", "Bibliography"]),
+        start_label=get("pages", "start_label", str, ""),
+        end_bookmarks=get("pages", "end_bookmarks", list, []),
         csv=root / get("output", "csv", str, "progress/progress.csv"),
         plot=root / get("output", "plot", str, "progress/progress.png"),
         goal_words=get("goal", "words", int, None),

@@ -6,8 +6,8 @@ Each time LaTeX Workshop (VSCodium/VSCode) builds the PDF, tex-pace counts the n
 
 - **Words**: body text counted by [TeXcount](https://app.uio.no/ifi/texcount/), in the files you choose (and the
   files they `\input` / `\include`). Headings, captions, maths and the bibliography are not counted by default.
-- **Pages**: counted from the page labelled "1" (so roman-numbered front matter is skipped) to the page before the
-  References/Bibliography bookmark.
+- **Pages**: the whole PDF by default, or just part of it, e.g. from Chapter 1 to the bibliography
+  (see [Page counts](#page-counts)).
 - **Goals** (optional): a target word or page count, and a date, give the words per day still needed.
 
 ```
@@ -81,8 +81,8 @@ texcount = "texcount"           # path to texcount, if it isn't on PATH
 texcount_args = []              # extra texcount arguments, e.g. ["-incbib"]
 
 [pages]
-start_label = "1"               # first counted page ("" for the first page of the PDF)
-end_bookmarks = ["References", "Bibliography"]  # counting stops before the last of these bookmarks
+start_label = ""                # start at the page numbered this, e.g. "1" ("" = first page of the PDF)
+end_bookmarks = []              # stop before the bookmark with this title, e.g. ["References"] ([] = end of PDF)
 
 [output]
 csv = "progress/progress.csv"
@@ -97,9 +97,51 @@ date = 2027-06-01
 An `exclude` pattern without a `/` matches a file name in any folder (`appendix*` matches `chapters/appendix-a.tex`),
 and `.tex` may be left off. A pattern with a `/` matches the whole path from the project folder.
 
-The page count stops at a bibliography bookmark only if the PDF has one: load `hyperref` and put the bibliography in
-the table of contents (e.g. `\printbibliography[heading=bibintoc]` with biblatex, or the `tocbibind` package).
-Otherwise pages are counted to the end of the PDF.
+### Page counts
+
+By default every page of the PDF is counted. To count only part of it, set where counting starts and stops in
+`[pages]`:
+
+| To count | `[pages]` settings |
+| --- | --- |
+| The whole PDF (default) | `start_label = ""`<br>`end_bookmarks = []` |
+| From Chapter 1, skipping the title page, abstract and contents | `start_label = "1"` |
+| Up to the bibliography (leaving out it and anything after it) | `end_bookmarks = ["References", "Bibliography"]` |
+| Only the main text: Chapter 1 up to the bibliography | `start_label = "1"`<br>`end_bookmarks = ["References", "Bibliography"]` |
+| Up to the appendices, when they come before the bibliography | `end_bookmarks = ["Title of the first appendix"]` |
+
+**`start_label`** is a printed page number, as shown in your PDF viewer's page box, not the page's position in the
+file. Counting starts at the page with that number. For `"1"` to skip the front matter, number the front matter
+with roman numerals and restart at 1 for Chapter 1, and load `hyperref`, which writes the page numbers into the PDF:
+
+```latex
+\usepackage{hyperref}
+...
+\begin{document}
+\pagenumbering{roman}     % title, abstract, contents: i, ii, iii...
+\maketitle
+\tableofcontents
+\cleardoublepage
+\pagenumbering{arabic}    % Chapter 1 starts at page 1
+```
+
+In the `book` class, `\frontmatter` and `\mainmatter` do the same. If no page has the number, counting starts at the
+first page.
+
+**`end_bookmarks`** are titles of PDF bookmarks, the outline in your PDF viewer's sidebar, which `hyperref` makes
+from the table of contents. Counting stops at the page before the bookmark. A bookmark matches if its whole title
+equals one in the list, ignoring capitals. If several match, the last one is used; if none does, counting runs to
+the end of the PDF.
+
+The bibliography only gets a bookmark if it is in the table of contents:
+
+```latex
+\printbibliography[heading=bibintoc]   % biblatex
+
+\usepackage[nottoc]{tocbibind}         % BibTeX/natbib (\bibliography{...}): in the preamble
+```
+
+Its title is "Bibliography" in the `book` and `report` classes and "References" in `article`, unless you change it.
 
 ## Commands
 

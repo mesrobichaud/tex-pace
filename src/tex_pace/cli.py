@@ -128,7 +128,8 @@ def cmd_init(args):
         warn(f"no .tex file with a \\documentclass in {root}; edit `include` in {CONFIG_NAME}")
         main = "main.tex"
     goal_date = dt.date.today().replace(year=dt.date.today().year + 1, day=1).isoformat()
-    path.write_text(TEMPLATE.format(main=main, pdf=Path(main).with_suffix(".pdf").as_posix(), goal_date=goal_date))
+    path.write_text(TEMPLATE.format(include=f'include = ["{main}"]',
+                                    pdf=f'pdf = "{Path(main).with_suffix(".pdf").as_posix()}"', goal_date=goal_date))
     print(f"tex-pace: wrote {path} (counting {main} and the files it includes)")
     print("Next: check the include/exclude lists, then run `tex-pace status`. To log every build, add the LaTeX")
     print("Workshop recipe from examples/latex-workshop-settings.json in the tex-pace repository (see its README).")
