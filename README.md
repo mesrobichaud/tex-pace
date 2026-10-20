@@ -34,6 +34,8 @@ The LaTeX Workshop recipe calls it by its full path, so if it's installed in an 
 
 ## Set up a LaTeX project
 
+### 1. Initialize 
+
 In the project folder (where the main `.tex` file is):
 
 ```sh
@@ -41,7 +43,64 @@ tex-pace init      # writes tex-pace.toml, counting the main .tex file and every
 tex-pace status    # check which files are counted
 ```
 
-### Add the LaTeX Workshop recipe
+### 2. Configure
+
+Next, modify `tex-pace.toml` as needed. After `tex-pace init` it will be in located in the project folder, and the paths it specifies are relative.
+
+```toml
+include = ["main.tex"]          # files to count (globs allowed); their \input/\include/\subfile/\import are followed
+exclude = ["frontmatter/*", "appendix*.tex"]   # not counted, and not followed
+follow_inputs = true            # false: count only the files matched by `include`
+pdf = "main.pdf"                # for the page count when --pdf isn't given
+
+[words]
+headers = false                 # also count words in \section{...} etc.
+captions = false                # also count words in figure and table captions
+texcount = "texcount"           # path to texcount, if it isn't on PATH
+texcount_args = []              # extra texcount arguments, e.g. ["-incbib"]
+
+[pages]
+start_label = ""                # start at the page numbered this, e.g. "1" ("" = first page of the PDF)
+end_bookmarks = []              # stop before the bookmark with this title, e.g. ["References"] ([] = end of PDF)
+
+...
+```
+
+An `exclude` pattern without a `/` matches a file name in any folder (`appendix*` matches `chapters/appendix-a.tex`),
+and `.tex` may be left off. A pattern with a `/` matches the whole path from the project folder.
+
+### More on page counting
+
+By default every page of the PDF is counted. To count only part of it, set where counting starts and stops in
+`[pages]`:
+
+| To count | `[pages]` settings |
+| --- | --- |
+| The whole PDF (default) | `start_label = ""`<br>`end_bookmarks = []` |
+| From Chapter 1, skipping the title page, abstract and contents | `start_label = "1"` |
+| Up to the bibliography (leaving out it and anything after it) | `end_bookmarks = ["References", "Bibliography"]` |
+| Only the main text: Chapter 1 up to the bibliography | `start_label = "1"`<br>`end_bookmarks = ["References", "Bibliography"]` |
+| Up to the appendices, when they come before the bibliography | `end_bookmarks = ["Title of the first appendix"]` |
+
+**`start_label`** is a printed page number, as shown in your PDF viewer's page box, not the page's position in the
+file. For `"1"` to skip the front matter, number the front matter
+with roman numerals and restart at 1 for Chapter 1, and load `hyperref`, which writes the page numbers into the PDF:
+
+**`end_bookmarks`** are titles of PDF bookmarks, the outline in your PDF viewer's sidebar, which `hyperref` makes
+from the table of contents. If no bookmarks match counting runs to
+the end of the PDF.
+
+The bibliography only gets a bookmark if it is in the table of contents:
+
+```latex
+\printbibliography[heading=bibintoc]   % biblatex
+
+\usepackage[nottoc]{tocbibind}         % BibTeX/natbib (\bibliography{...}): in the preamble
+```
+
+Its title is "Bibliography" in the `book` and `report` classes and "References" in `article`, unless you change it.
+
+### 3. Add LaTeX Workshop recipe
 
 [`examples/latex-workshop-settings.json`](examples/latex-workshop-settings.json) has a recipe that runs latexmk and
 then `tex-pace log`. Copy its contents to `settings.json` in VSCodium and replace `/path/to/tex-pace` with the full path of your installed
@@ -64,85 +123,6 @@ To also redraw the plot after every build, add `"--plot"` to the end of the tex-
 `progress/progress.png` in a VSCodium tab: it refreshes when the image changes. Or run `tex-pace plot`
 whenever you want to see it.
 
-## Configuration
-
-`tex-pace.toml`, in the project folder. Paths are relative to it.
-
-```toml
-include = ["main.tex"]          # files to count (globs allowed); their \input/\include/\subfile/\import are followed
-exclude = ["frontmatter/*", "appendix*.tex"]   # not counted, and not followed
-follow_inputs = true            # false: count only the files matched by `include`
-pdf = "main.pdf"                # for the page count when --pdf isn't given
-
-[words]
-headers = false                 # also count words in \section{...} etc.
-captions = false                # also count words in figure and table captions
-texcount = "texcount"           # path to texcount, if it isn't on PATH
-texcount_args = []              # extra texcount arguments, e.g. ["-incbib"]
-
-[pages]
-start_label = ""                # start at the page numbered this, e.g. "1" ("" = first page of the PDF)
-end_bookmarks = []              # stop before the bookmark with this title, e.g. ["References"] ([] = end of PDF)
-
-[output]
-csv = "progress/progress.csv"
-plot = "progress/progress.png"
-
-[goal]
-words = 80000
-pages = 200
-date = 2027-06-01
-```
-
-An `exclude` pattern without a `/` matches a file name in any folder (`appendix*` matches `chapters/appendix-a.tex`),
-and `.tex` may be left off. A pattern with a `/` matches the whole path from the project folder.
-
-### Page counts
-
-By default every page of the PDF is counted. To count only part of it, set where counting starts and stops in
-`[pages]`:
-
-| To count | `[pages]` settings |
-| --- | --- |
-| The whole PDF (default) | `start_label = ""`<br>`end_bookmarks = []` |
-| From Chapter 1, skipping the title page, abstract and contents | `start_label = "1"` |
-| Up to the bibliography (leaving out it and anything after it) | `end_bookmarks = ["References", "Bibliography"]` |
-| Only the main text: Chapter 1 up to the bibliography | `start_label = "1"`<br>`end_bookmarks = ["References", "Bibliography"]` |
-| Up to the appendices, when they come before the bibliography | `end_bookmarks = ["Title of the first appendix"]` |
-
-**`start_label`** is a printed page number, as shown in your PDF viewer's page box, not the page's position in the
-file. Counting starts at the page with that number. For `"1"` to skip the front matter, number the front matter
-with roman numerals and restart at 1 for Chapter 1, and load `hyperref`, which writes the page numbers into the PDF:
-
-```latex
-\usepackage{hyperref}
-...
-\begin{document}
-\pagenumbering{roman}     % title, abstract, contents: i, ii, iii...
-\maketitle
-\tableofcontents
-\cleardoublepage
-\pagenumbering{arabic}    % Chapter 1 starts at page 1
-```
-
-In the `book` class, `\frontmatter` and `\mainmatter` do the same. If no page has the number, counting starts at the
-first page.
-
-**`end_bookmarks`** are titles of PDF bookmarks, the outline in your PDF viewer's sidebar, which `hyperref` makes
-from the table of contents. Counting stops at the page before the bookmark. A bookmark matches if its whole title
-equals one in the list, ignoring capitals. If several match, the last one is used; if none does, counting runs to
-the end of the PDF.
-
-The bibliography only gets a bookmark if it is in the table of contents:
-
-```latex
-\printbibliography[heading=bibintoc]   % biblatex
-
-\usepackage[nottoc]{tocbibind}         % BibTeX/natbib (\bibliography{...}): in the preamble
-```
-
-Its title is "Bibliography" in the `book` and `report` classes and "References" in `article`, unless you change it.
-
 ## Commands
 
 | Command | |
@@ -159,5 +139,5 @@ folders.
 and exits successfully, so the PDF viewer still refreshes. Use `--strict` to make errors fail instead.
 
 The log has one row per build (`timestamp, commit, words, pages`). `commit` is the short git hash, with `+` if there
-are uncommitted changes. A rebuild that changes nothing isn't logged again, and the plot shows the last build of
-each day. Commit `progress/` with your project to keep the history, or add it to `.gitignore`.
+are uncommitted changes. A rebuild that changes nothing isn't logged again. The plot shows the last build of
+each day. 

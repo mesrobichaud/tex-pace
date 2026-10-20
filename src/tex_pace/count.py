@@ -59,7 +59,7 @@ def collect_files(cfg: Config) -> tuple[list[Path], list[str]]:
     for pattern in cfg.include:
         matches = sorted(cfg.root.glob(pattern))
         if not matches:
-            warnings.append(f"`include` pattern {pattern!r} matches no files")
+            warnings.append(f"`include` pattern {pattern!r} matches no files in {cfg.root} (paths are relative to {cfg.path.name})")
         for match in matches:
             visit(match.resolve(), cfg.root)
     return files, warnings
