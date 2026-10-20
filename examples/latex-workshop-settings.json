@@ -9,7 +9,7 @@
     {
       "name": "tex-pace",
       "command": "/path/to/tex-pace",
-      "args": ["log", "-C", "%DIR%", "--pdf", "%OUTDIR%/%DOCFILE%.pdf", "--plot"],
+      "args": ["log", "-C", "%DIR%", "--pdf", "%OUTDIR%/%DOCFILE%.pdf"],
       "env": {}
     }
   ],

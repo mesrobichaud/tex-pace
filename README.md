@@ -1,11 +1,12 @@
 # tex-pace
 
-Track how a LaTeX document grows. Each time LaTeX Workshop (VS Code / VSCodium) builds the PDF, tex-pace counts the
-words in your text and the pages in the PDF, adds them to a CSV log, and redraws a plot of progress over time.
+VSCodium and the LaTex Workshop Extension can be useful for writing LaTex documents. For shared projects VSCodium offers the flexibility of working offline with syncing to e.g., OverLeaf using git-integration. This Python package installs separately and integrates with LaTeX Workshop to track the progress of your writing. 
+
+Each time LaTeX Workshop (VSCodium/VSCode) builds the PDF, tex-pace counts the number of words and pages in the PDF and adds them to a CSV log. Currently, a basic visual of progress can be output. 
 
 - **Words**: body text counted by [TeXcount](https://app.uio.no/ifi/texcount/), in the files you choose (and the
   files they `\input` / `\include`). Headings, captions, maths and the bibliography are not counted by default.
-- **Pages**: from the page labelled "1" (so roman-numbered front matter is skipped) to the page before the
+- **Pages**: counted from the page labelled "1" (so roman-numbered front matter is skipped) to the page before the
   References/Bibliography bookmark.
 - **Goals** (optional): a target word or page count, and a date, give the words per day still needed.
 
@@ -21,15 +22,15 @@ $ tex-pace status
 
 ## Install
 
-You need Python 3.9 or newer, and `texcount` (it comes with TeX Live, MacTeX and MiKTeX).
+You need Python 3.9 or newer, and `texcount`. 
+With TinyTeX or other minimal installs: it needs to be added it with `tlmgr install texcount`. `texcount` comes with the full TeX Live, MacTeX and MiKTeX distributions.
+
 
 ```sh
 pip install git+https://github.com/USER/tex-pace
 ```
 
-Use any Python environment you like (a venv, a conda env, or `pipx install git+https://github.com/USER/tex-pace`).
-The LaTeX Workshop recipe calls it by its full path, so the environment doesn't need to be active in VS Code.
-To update, add `--upgrade` to the install command.
+The LaTeX Workshop recipe calls it by its full path, so if it's installed in an environment that env doesn't need to be active in VSCodium.
 
 ## Set up a LaTeX project
 
@@ -43,25 +44,25 @@ tex-pace status    # check which files are counted
 ### Add the LaTeX Workshop recipe
 
 [`examples/latex-workshop-settings.json`](examples/latex-workshop-settings.json) has a recipe that runs latexmk and
-then `tex-pace log`. Copy its contents and replace `/path/to/tex-pace` with the full path of your installed
-`tex-pace`, which `tex-pace init` prints, or `which tex-pace` (`where tex-pace` on Windows) finds. A bare
-`"tex-pace"` often fails, because VS Code started from the Dock or Start menu doesn't see conda environments,
-`~/.local/bin`, etc.
+then `tex-pace log`. Copy its contents to `settings.json` in VSCodium and replace `/path/to/tex-pace` with the full path of your installed
+`tex-pace`, which `tex-pace init` prints, or `which tex-pace` (`where tex-pace` on Windows) finds. 
 
 Put it in one of these places:
 
-- **One project**: `.vscode/settings.json` in the folder you open in VS Code. That is the top folder of the
+- **One project**: `.vscode/settings.json` in the folder you open in VSCodium. That is the top folder of the
   window, which may be a parent of the LaTeX project; a `.vscode` folder further down is ignored. Workspace
-  settings apply in every VS Code profile.
+  settings apply in every VSCodium profile.
 - **A `.code-workspace` file**: inside its `"settings": { ... }` section.
 - **Every project**: your user settings (*Preferences: Open User Settings (JSON)*). These belong to the current
-  VS Code profile. In a project without a `tex-pace.toml`, `tex-pace log` only prints a warning, so this is harmless.
+  VSCodium profile. In a project without a `tex-pace.toml`, `tex-pace log` only prints a warning, so this is harmless.
 
 If the file already has `latex-workshop.latex.tools` or `latex-workshop.latex.recipes`, merge the entries into those
 lists. These settings replace LaTeX Workshop's built-in tools and recipes, and the first recipe is the one used when
 you save. Change the latexmk arguments if you build differently (e.g. `-xelatex` or `-lualatex` instead of `-pdf`).
 
-Open `tex-pace/progress.png` in a VS Code tab and it refreshes after every build.
+To also redraw the plot after every build, add `"--plot"` to the end of the tex-pace `args`, and open
+`tex-pace/progress.png` in a VSCodium tab: it refreshes when the image changes. Or run `tex-pace plot`
+whenever you want to see it.
 
 ## Configuration
 

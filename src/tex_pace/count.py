@@ -74,8 +74,8 @@ def count_words(cfg: Config, files: list[Path]) -> dict[str, int]:
         run = subprocess.run([cfg.texcount, "-brief", "-utf8", *cfg.texcount_args, *names], cwd=cfg.root,
                              capture_output=True, text=True)
     except FileNotFoundError:
-        raise CountError(f"`{cfg.texcount}` not found: install TeX Live or MacTeX, or set words.texcount "
-                         f"in {cfg.path.name}") from None
+        raise CountError(f"`{cfg.texcount}` not found: install it (`tlmgr install texcount`, e.g. for TinyTeX), "
+                         f"or set words.texcount in {cfg.path.name} to its full path") from None
     if run.returncode != 0:
         raise CountError(f"texcount failed: {run.stderr.strip() or run.stdout.strip()}")
     counts = {}
