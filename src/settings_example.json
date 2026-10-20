@@ -1,0 +1,18 @@
+{
+  "latex-workshop.latex.tools": [
+    {
+      "name": "latexmk",
+      "command": "latexmk",
+      "args": ["-synctex=1", "-interaction=nonstopmode", "-file-line-error", "-pdf", "-outdir=%OUTDIR%", "%DOC%"],
+      "env": {}
+    },
+    {
+      "name": "progress",
+      "command": "/path/to/python3",
+      "args": ["%DIR%/tools/progress.py", "log", "--pdf", "%OUTDIR%/%DOCFILE%.pdf", "--plot"]
+    }
+  ],
+  "latex-workshop.latex.recipes": [
+    { "name": "latexmk + progress", "tools": ["latexmk", "progress"] }
+  ]
+}
