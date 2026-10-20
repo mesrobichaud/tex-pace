@@ -7,12 +7,14 @@
       "env": {}
     },
     {
-      "name": "progress",
-      "command": "/path/to/python3",
-      "args": ["%DIR%/tools/progress.py", "log", "--pdf", "%OUTDIR%/%DOCFILE%.pdf", "--plot"]
+      "name": "tex-pace",
+      "command": "/path/to/tex-pace",
+      "args": ["log", "-C", "%DIR%", "--pdf", "%OUTDIR%/%DOCFILE%.pdf", "--plot"],
+      "env": {}
     }
   ],
   "latex-workshop.latex.recipes": [
-    { "name": "latexmk + progress", "tools": ["latexmk", "progress"] }
+    { "name": "latexmk + tex-pace", "tools": ["latexmk", "tex-pace"] },
+    { "name": "latexmk", "tools": ["latexmk"] }
   ]
 }

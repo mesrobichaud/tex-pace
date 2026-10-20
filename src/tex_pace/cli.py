@@ -1,9 +1,8 @@
-"""Command line interface: tex-pace init | log | status | plot | recipe."""
+"""Command line interface: tex-pace init | log | status | plot."""
 from __future__ import annotations
 
 import argparse
 import datetime as dt
-import json
 import math
 import re
 import sys
@@ -119,38 +118,6 @@ def find_main(root: Path) -> str | None:
     return mains[0] if mains else None
 
 
-def recipe_settings() -> dict:
-    latexmk = ["-synctex=1", "-interaction=nonstopmode", "-file-line-error", "-pdf", "-outdir=%OUTDIR%", "%DOC%"]
-    log = ["log", "-C", "%DIR%", "--pdf", "%OUTDIR%/%DOCFILE%.pdf", "--plot"]
-    # An absolute path, since VS Code's PATH often lacks conda envs, pipx, etc.
-    scripts = Path(sys.executable).parent
-    script = next((scripts / name for name in ("tex-pace", "tex-pace.exe") if (scripts / name).is_file()), None)
-    command, args = (str(script), log) if script else (sys.executable, ["-m", "tex_pace", *log])
-    return {
-        "latex-workshop.latex.tools": [
-            {"name": "latexmk", "command": "latexmk", "args": latexmk, "env": {}},
-            {"name": "tex-pace", "command": command, "args": args, "env": {}},
-        ],
-        "latex-workshop.latex.recipes": [
-            {"name": "latexmk + tex-pace", "tools": ["latexmk", "tex-pace"]},
-            {"name": "latexmk", "tools": ["latexmk"]},
-        ],
-    }
-
-
-def cmd_recipe(args):
-    text = json.dumps(recipe_settings(), indent=2) + "\n"
-    if not args.write:
-        print(text, end="")
-        return
-    path = Path(args.project).resolve() / ".vscode" / "settings.json"
-    if path.exists():
-        die(f"{path} already exists; add these settings to it by hand:\n\n{text}")
-    path.parent.mkdir(exist_ok=True)
-    path.write_text(text)
-    print(f"tex-pace: wrote {path}")
-
-
 def cmd_init(args):
     root = Path(args.project).resolve()
     path = root / CONFIG_NAME
@@ -163,9 +130,12 @@ def cmd_init(args):
     goal_date = dt.date.today().replace(year=dt.date.today().year + 1, day=1).isoformat()
     path.write_text(TEMPLATE.format(main=main, pdf=Path(main).with_suffix(".pdf").as_posix(), goal_date=goal_date))
     print(f"tex-pace: wrote {path} (counting {main} and the files it includes)")
-    print("\nNext: check the include/exclude lists, then run `tex-pace status`. To log every build, add this to")
-    print(".vscode/settings.json (or run `tex-pace recipe --write`):\n")
-    print(json.dumps(recipe_settings(), indent=2))
+    print("Next: check the include/exclude lists, then run `tex-pace status`. To log every build, add the LaTeX")
+    print("Workshop recipe from examples/latex-workshop-settings.json in the tex-pace repository (see its README).")
+    scripts = Path(sys.executable).parent       # where pip put the tex-pace command
+    for script in (scripts / "tex-pace", scripts / "tex-pace.exe"):
+        if script.is_file():
+            print(f"In it, replace /path/to/tex-pace with {script}")
 
 
 def main(argv=None):
@@ -175,7 +145,7 @@ def main(argv=None):
     pdf = argparse.ArgumentParser(add_help=False)
     pdf.add_argument("--pdf", type=lambda p: Path(p).resolve(), help="compiled PDF (default: `pdf` in the config)")
 
-    parser = argparse.ArgumentParser(prog="tex-pace", description=__doc__)
+    parser = argparse.ArgumentParser(prog="tex-pace", description="Log LaTeX word and page counts on every build, and plot them over time.")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -194,10 +164,6 @@ def main(argv=None):
 
     p = sub.add_parser("plot", parents=[common], help="plot the logged counts over time")
     p.set_defaults(func=cmd_plot)
-
-    p = sub.add_parser("recipe", parents=[common], help="print LaTeX Workshop settings that log every build")
-    p.add_argument("--write", action="store_true", help="write them to .vscode/settings.json if it doesn't exist")
-    p.set_defaults(func=cmd_recipe)
 
     args = parser.parse_args(argv)
     args.func(args)
