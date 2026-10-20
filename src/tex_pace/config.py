@@ -47,8 +47,8 @@ start_label = "1"
 end_bookmarks = ["References", "Bibliography"]
 
 [output]
-csv = "tex-pace/progress.csv"
-plot = "tex-pace/progress.png"
+csv = "progress/progress.csv"
+plot = "progress/progress.png"
 
 [goal]
 # words = 80000
@@ -145,8 +145,8 @@ def load(start: Path) -> Config:
         texcount_args=get("words", "texcount_args", list, []),
         start_label=get("pages", "start_label", str, "1"),
         end_bookmarks=get("pages", "end_bookmarks", list, ["References", "Bibliography"]),
-        csv=root / get("output", "csv", str, "tex-pace/progress.csv"),
-        plot=root / get("output", "plot", str, "tex-pace/progress.png"),
+        csv=root / get("output", "csv", str, "progress/progress.csv"),
+        plot=root / get("output", "plot", str, "progress/progress.png"),
         goal_words=get("goal", "words", int, None),
         goal_pages=get("goal", "pages", int, None),
         goal_date=get("goal", "date", dt.date, None),

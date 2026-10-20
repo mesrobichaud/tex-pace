@@ -61,7 +61,7 @@ lists. These settings replace LaTeX Workshop's built-in tools and recipes, and t
 you save. Change the latexmk arguments if you build differently (e.g. `-xelatex` or `-lualatex` instead of `-pdf`).
 
 To also redraw the plot after every build, add `"--plot"` to the end of the tex-pace `args`, and open
-`tex-pace/progress.png` in a VSCodium tab: it refreshes when the image changes. Or run `tex-pace plot`
+`progress/progress.png` in a VSCodium tab: it refreshes when the image changes. Or run `tex-pace plot`
 whenever you want to see it.
 
 ## Configuration
@@ -85,8 +85,8 @@ start_label = "1"               # first counted page ("" for the first page of t
 end_bookmarks = ["References", "Bibliography"]  # counting stops before the last of these bookmarks
 
 [output]
-csv = "tex-pace/progress.csv"
-plot = "tex-pace/progress.png"
+csv = "progress/progress.csv"
+plot = "progress/progress.png"
 
 [goal]
 words = 80000
@@ -118,4 +118,4 @@ and exits successfully, so the PDF viewer still refreshes. Use `--strict` to mak
 
 The log has one row per build (`timestamp, commit, words, pages`). `commit` is the short git hash, with `+` if there
 are uncommitted changes. A rebuild that changes nothing isn't logged again, and the plot shows the last build of
-each day. Commit `tex-pace/` with your project to keep the history, or add it to `.gitignore`.
+each day. Commit `progress/` with your project to keep the history, or add it to `.gitignore`.
