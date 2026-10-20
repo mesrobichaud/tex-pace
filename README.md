@@ -1,6 +1,6 @@
 # tex-pace
 
-VSCodium and the LaTex Workshop Extension can be useful for writing LaTex documents. For shared projects VSCodium offers the flexibility of working offline with syncing to e.g., OverLeaf using git-integration. This Python package installs separately and integrates with LaTeX Workshop to track the progress of your writing. 
+VSCodium and the [LaTex Workshop Extension](https://github.com/James-Yu/LaTeX-Workshop) provide convenience for writing in LaTeX. For shared projects VSCodium offers the flexibility of working offline with syncing to e.g., OverLeaf using git-integration. This Python package installs separately and integrates with LaTeX Workshop to track the progress of your writing. 
 
 Each time LaTeX Workshop (VSCodium/VSCode) builds the PDF, tex-pace counts the number of words and pages in the PDF and adds them to a CSV log. Currently, a basic visual of progress can be output. 
 
