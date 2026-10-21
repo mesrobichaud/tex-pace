@@ -64,14 +64,13 @@ def cmd_log(args):
         cfg = load(args.project)
         words, pages = measure(cfg, args.pdf)
         total = sum(words.values())
-        summary = "; ".join(progress_lines(cfg, total, pages))
         history.append(cfg.csv, {"timestamp": datetime.now().isoformat(timespec="seconds"),
                                  "commit": git_commit(cfg.root), "words": total,
                                  "pages": "" if pages is None else pages})
-        print(f"tex-pace: {summary}")
+        print(f"tex-pace: {'; '.join(progress_lines(cfg, total, pages))}")
         if args.plot:
             history.plot(cfg)
-    except (ConfigError, CountError, OSError) as e:
+    except (ConfigError, CountError, history.LogError, OSError) as e:
         # A failed tool fails the LaTeX Workshop recipe (and the PDF refresh), so only warn unless --strict.
         die(e) if args.strict else warn(e)
     except Exception as e:
@@ -84,13 +83,14 @@ def cmd_status(args):
     try:
         cfg = load(args.project)
         words, pages = measure(cfg, args.pdf)
-    except (ConfigError, CountError) as e:
+        lines = progress_lines(cfg, sum(words.values()), pages)
+    except (ConfigError, CountError, history.LogError) as e:
         die(e)
     width = max([len(name) for name in words] + [5])
     for name, n in words.items():
         print(f"  {name:<{width}}  {n:>8,}")
     print(f"  {'':<{width}}  {'-' * 8}")
-    for line in progress_lines(cfg, sum(words.values()), pages):
+    for line in lines:
         print(f"  {line}")
 
 
@@ -101,7 +101,10 @@ def cmd_plot(args):
         die(e)
     if not history.read(cfg.csv):
         die(f"nothing logged yet in {cfg.rel(cfg.csv)} (run `tex-pace log` or build with the recipe)")
-    history.plot(cfg)
+    try:
+        history.plot(cfg)
+    except history.LogError as e:
+        die(f"{cfg.rel(cfg.csv)}: {e}")
     print(f"tex-pace: wrote {cfg.rel(cfg.plot)}")
 
 

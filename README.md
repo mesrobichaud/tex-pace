@@ -32,7 +32,7 @@ pip install git+https://github.com/mesrobichaud/tex-pace
 
 The LaTeX Workshop recipe calls it by its full path, so if it's installed in an environment that env doesn't need to be active in VSCodium.
 
-## Set up a LaTeX project
+## Set up with an existing LaTeX project
 
 ### 1. Initialize 
 
@@ -63,7 +63,7 @@ texcount_args = []              # extra texcount arguments, e.g. ["-incbib"]
 start_label = ""                # start at the page numbered this, e.g. "1" ("" = first page of the PDF)
 end_bookmarks = []              # stop before the bookmark with this title, e.g. ["References"] ([] = end of PDF)
 
-...
+# ...
 ```
 
 An `exclude` pattern without a `/` matches a file name in any folder (`appendix*` matches `chapters/appendix-a.tex`),
@@ -101,16 +101,16 @@ The bibliography only gets a bookmark if it is in the table of contents:
 Its title is "Bibliography" in the `book` and `report` classes and "References" in `article`, unless you change it.
 
 ### 3. Add LaTeX Workshop recipe
-
-[`examples/latex-workshop-settings.json`](examples/latex-workshop-settings.json) has a recipe that runs latexmk and
-then `tex-pace log`. Copy its contents to `settings.json` in VSCodium and replace `/path/to/tex-pace` with the full path of your installed
-`tex-pace`, which `tex-pace init` prints, or `which tex-pace` (`where tex-pace` on Windows) finds. 
+LaTeX Workshop needs a modified recipe to run `tex-pace` with each build: 
+- [`examples/latex-workshop-settings.json`](examples/latex-workshop-settings.json) has a recipe that runs latexmk and then `tex-pace log`
+- Copy its contents to `settings.json` in VSCodium
+- Replace `/path/to/tex-pace` with the full path of your installed `tex-pace`, which `tex-pace init` prints
+  - Use `which tex-pace` (`where tex-pace` on Windows) (`tex-pace init` prints it as well)
 
 Put it in one of these places:
 
 - **One project**: `.vscode/settings.json` in the folder you open in VSCodium. That is the top folder of the
-  window, which may be a parent of the LaTeX project; a `.vscode` folder further down is ignored. Workspace
-  settings apply in every VSCodium profile.
+  window, which may be a parent of the LaTeX project; a `.vscode` folder further down is ignored. 
 - **A `.code-workspace` file**: inside its `"settings": { ... }` section.
 - **Every project**: your user settings (*Preferences: Open User Settings (JSON)*). These belong to the current
   VSCodium profile. In a project without a `tex-pace.toml`, `tex-pace log` only prints a warning, so this is harmless.
@@ -141,3 +141,13 @@ and exits successfully, so the PDF viewer still refreshes. Use `--strict` to mak
 The log has one row per build (`timestamp, commit, words, pages`). `commit` is the short git hash, with `+` if there
 are uncommitted changes. A rebuild that changes nothing isn't logged again. The plot shows the last build of
 each day. 
+
+To backfill earlier progress, add rows to the CSV in any order, with the date as `YYYY-MM-DD` (a time is optional)
+and the commit and pages left empty if you don't know them:
+
+```
+2026-09-01,,1200,8
+2026-09-15,,6900,
+```
+
+Then run `tex-pace plot` (or build with `--plot`) to redraw the plot.
